@@ -135,6 +135,7 @@ X = Normalizer().fit_transform(X,Y)
 print("Fitting network...")
 reg.fit(X,Y)
 predicts=reg.predict(test)
+pickle.dump(predicts,open('predicts.p','wb'))
 result=[[i]+[j] for i,j in zip(label,predicts)]
 np.savetxt("preds.csv", result, delimiter=",")
 print(result)
