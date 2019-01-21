@@ -13,7 +13,7 @@ def prepareData():
     seen = {}
     cur_num = 0
     count = -1
-    with open('all/train_V2.csv', 'rb') as csvfile:
+    with open('all/train_V2.csv', 'rt') as csvfile:
         spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
         for row in spamreader:
             count += 1
@@ -61,7 +61,7 @@ def prepareTest():
     seen = {}
     cur_num = 0
     count = -1
-    with open('all/train_V2.csv', 'rb') as csvfile:
+    with open('all/train_V2.csv', 'rt') as csvfile:
         spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
         for row in spamreader:
             count += 1
@@ -104,7 +104,7 @@ def prepareTest():
     return X, Y
 
 
-fittest=pickle.load(open("fittest3.p","rb"))
+fittest=pickle.load(open("fittest.p","rb"))
 print(fittest)
 parameters = fittest
 hidden_layers = parameters[0]
@@ -124,11 +124,15 @@ reg = MLPRegressor(hidden_layer_sizes=hidden_layers, activation="relu", solver=c
                                momentum=cur_momentum, nesterovs_momentum=cur_nester, early_stopping=False, validation_fraction=0.1,
                                beta_1=0.9, beta_2=0.999, epsilon=1e-08, n_iter_no_change=10)
 
+print("preparing training set")
 X,Y=prepareData()
+print("preparing test set")
 test,label=prepareTest()
+print("Normalizing data")
 X = Normalizer().fit_transform(X,Y)
 
 #score = cross_val_score(reg, X, Y, cv=3)
+print("Fitting network...")
 reg.fit(X,Y)
 predicts=reg.predict(test)
 result=[[i]+[j] for i,j in zip(label,predicts)]
