@@ -14,6 +14,7 @@ import time
 import pickle
 from sklearn.neural_network import MLPClassifier
 import random
+from GA_network_optimiser import GA_network_optimiser
 
 class NN_GA():
     is_first = True
@@ -555,128 +556,5 @@ print(end - start)
 
 # X=pickle.load(open('datax.p','rb'))
 # Y=pickle.load(open('datay.p','rb'))
-
-scores = []
-fittest = []
-std_list = []
-fittest_std = []
-true_fitness=[]
-
-mini = True
-clsfc = False
-gen = 0
-rprt = Reporter()
-ga = NN_GA(30, minimisation=mini, classification=clsfc, ga_type="SS", reporter=rprt)
-while gen<300:
-    fig, (ax, bx, cx, dx, ex) = plt.subplots(5, 1, sharex=False)
-    print("__________________________")
-    print(gen)
-    start = time.time()
-    if gen == 0:
-        partx, party = random_partition(X, Y, 1000)
-    else:
-        partx, party = random_partition(X, Y, 600000)
-
-    end = time.time()
-    print("partition took "),
-    print(end - start)
-
-    start = time.time()
-    score, stds = ga.run_GA(partx, party)
-    end = time.time()
-    print("ga gen took "),
-    print(end - start)
-    score = score
-    if mini:
-        fittest.append(min(np.abs(score)))
-        ind = score.index(min(np.abs(score)))
-    else:
-        fittest.append(max(np.abs(score)))
-        ind = score.index(max(np.abs(score)))
-
-    fittest_std.append(stds[ind])
-    scores.append(np.mean(score))
-    ax.plot(fittest[-10:], label='Fittest', color='orange')
-    ax.plot(scores[-10:], label='Fittest', color='blue')
-    std = np.mean(stds)
-    std_list.append(std)
-    upper = [x + y for x, y in zip(scores[-10:], std_list[-10:])]
-    lower = [x - y for x, y in zip(scores[-10:], std_list[-10:])]
-    ax.fill_between(range(0, len(upper)), upper, lower, facecolor='blue', alpha=0.2)
-
-    upper = [x + y for x, y in zip(fittest[-10:], fittest_std[-10:])]
-    lower = [x - y for x, y in zip(fittest[-10:], fittest_std[-10:])]
-    ax.fill_between(range(0, len(upper)), upper, lower, facecolor='orange', alpha=0.2)
-
-    #bx.bar(range(len(fittest[-10:])), fittest[-10:], color='blue')
-    t_fit=rprt.true_fitness
-    true_fitness.append(t_fit[ind])
-    bx.bar(range(len(true_fitness[-10:])), true_fitness[-10:], color='orange')
-
-    cx.bar(range(len(rprt.imunity)), rprt.imunity, color="blue")
-    dx.bar(range(len(rprt.trust)), rprt.trust, color="blue")
-    cx.bar((ind), rprt.imunity[ind], color="orange")
-    dx.bar((ind), rprt.trust[ind], color="orange")
-
-    data_plot = np.zeros(10)
-    data_count = np.zeros(10)
-    max_seen = 0
-    for i in rprt.networks:
-        layers = i[0]
-        if len(layers) > max_seen:
-            max_seen = len(layers)
-
-        for i in range(len(layers)):
-            data_plot[i] += layers[i]
-            data_count[i] += 1
-
-    data_plot = data_plot[:max_seen]
-
-    for i in range(len(data_plot)):
-        data_plot[i] = data_plot[i] / data_count[i]
-
-    ex.bar(range(len(data_plot)), data_plot, color="blue")
-
-    cx.set_xlabel("imunity", fontsize=6)
-    dx.set_xlabel("trust", fontsize=6)
-    ex.set_xlabel("composition", fontsize=6)
-
-    for tick in ax.yaxis.get_major_ticks():
-        tick.label.set_fontsize(6)
-
-    for tick in ax.xaxis.get_major_ticks():
-        tick.label.set_fontsize(6)
-
-    for tick in bx.yaxis.get_major_ticks():
-        tick.label.set_fontsize(6)
-
-    for tick in bx.xaxis.get_major_ticks():
-        tick.label.set_fontsize(6)
-
-    for tick in dx.yaxis.get_major_ticks():
-        tick.label.set_fontsize(6)
-
-    for tick in ex.yaxis.get_major_ticks():
-        tick.label.set_fontsize(6)
-
-    for tick in dx.xaxis.get_major_ticks():
-        tick.label.set_fontsize(6)
-
-    for tick in ex.xaxis.get_major_ticks():
-        tick.label.set_fontsize(6)
-
-    for tick in cx.yaxis.get_major_ticks():
-        tick.label.set_fontsize(6)
-
-    for tick in cx.xaxis.get_major_ticks():
-        tick.label.set_fontsize(6)
-
-    fig.tight_layout()
-    fig.show()
-    # fig.tightLayout()
-
-    pickle.dump(rprt.fittest,open('fittest.p','wb'))
-    fig.savefig('graph.png')
-    plt.pause(0.01)
-    print("__________________________")
-    gen += 1
+myOpt=GA_network_optimiser(generation=300,pop_size=30, minimisation=True, classification=False, ga_type="SS")
+myOpt.run(X,Y,True,100)
